@@ -1,5 +1,6 @@
 import inspect
-#import test
+import importlib
+from os import path
 
 listOfStandAloneFunctions = []
 listOfClasses = []
@@ -15,38 +16,31 @@ def isFunctionHeader(block) -> bool:
 	return False
 
 def checkStandAloneFuncs(path):
-	try:
-		file = open(path)
-		file = file.readlines()
+	file = open(path)
+	file = file.readlines()
 
-		for lineNum, block in enumerate(file):
-		    if(isFunctionHeader(block)):
-		    	index = 0
-		    	for char in block:
-		    		if(char == "("):
-		    			break
-		    		index += 1
-		    	listOfStandAloneFunctions.append(block[4:index]) 
-
-	except IOError:
-	    print("File either not accessible or does not exists")	    	
-
+	for lineNum, block in enumerate(file):
+		  if(isFunctionHeader(block)):
+		    index = 0
+		    for char in block:
+		    	if(char == "("):
+		    		break
+		    	index += 1
+		    listOfStandAloneFunctions.append(block[4:index]) 
+   	
 def isClassHeader(block) -> bool:
 	if(block[0:5] == "class"):
 		return True;
 	return False;
 
 def checkForClasses(path):
-	try:
-		file = open(path)
-		file = file.readlines()
+	file = open(path)
+	file = file.readlines()
 
-		for lineNum, block in enumerate(file):
-		    if(isClassHeader(block)):
-		    	className = block[6:-2]
-		    	listOfClasses.append(className)
-	except IOError:
-	    print("File either not accessible or does not exists")	    	
+	for lineNum, block in enumerate(file):
+		if(isClassHeader(block)):
+		    className = block[6:-2]
+		    listOfClasses.append(className)
 
 # Checks if there are dependancy insides functions
 def checkForSAFuncsDependency(module):
@@ -92,16 +86,23 @@ def checkForDependencyinMethodsClass(module):
 def main():
 
 	############## INPUT ############################
-	path = input('Please enter the name of the file: ')
+	inputPath = input('Please enter the path of the file: ')
+
+	if(not path.exists(inputPath)):
+		print("File does not exists")
+		return
+
 	print("Currently Scanning........")
-	module = eval(path)
+	spec = importlib.util.spec_from_file_location("placeHolder", inputPath)
+	module = importlib.util.module_from_spec(spec)
+	spec.loader.exec_module(module)
 
 	############## FOR STANDALONE FUNCTIONS ONLY ############################
-	checkStandAloneFuncs(path + ".py")
+	checkStandAloneFuncs(inputPath)
 	checkForSAFuncsDependency(module)
 
 	############## FOR CLASSES FUNCTIONS ONLY ############################
-	checkForClasses(path + ".py")
+	checkForClasses(inputPath)
 	checkMethodsInsideClass(module)
 	checkForDependencyinMethodsClass(module)
 
