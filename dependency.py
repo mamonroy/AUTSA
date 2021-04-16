@@ -115,8 +115,8 @@ def main():
 	print(testDependencySets,"\n\n")
 
 	############ REGRESSION STARTS BASED ON DEPENDENCY #########################
-	fileName = os.path.basename(originalInput)  				#eds_report.csv
-	locationOriginal = os.path.dirname(originalInput) + "/"   		#/srv/volume1/data/eds
+	fileName = os.path.basename(originalInput)  				
+	locationOriginal = os.path.dirname(originalInput) + "/"   		
 	locationModified = os.path.dirname(modifiedInput)  + "/"
 
 	regression.regTest(locationOriginal, locationModified, fileName , list(testDependencySets))
