@@ -1,5 +1,7 @@
 import inspect
 import importlib
+import regression
+import os
 from os import path
 
 listOfStandAloneFunctions = []
@@ -86,31 +88,38 @@ def checkForDependencyinMethodsClass(module):
 def main():
 
 	############## INPUT ############################
-	inputPath = input('Please enter the path of the file: ')
+	originalInput = input('Please enter the path of the original file: ')
+	modifiedInput = input('Please enter tha path of the modified file: ')
 
-	if(not path.exists(inputPath)):
-		print("File does not exists")
+	if(not path.exists(originalInput) or not path.exists(modifiedInput)):
+		print("Files do not exists")
 		return
 
-	print("Currently Scanning........")
-	spec = importlib.util.spec_from_file_location("placeHolder", inputPath)
+	################ DEPENDANCY SCANNER STARTS #############################
+	print("Dependency Check Starts")
+	spec = importlib.util.spec_from_file_location("test", originalInput)
 	module = importlib.util.module_from_spec(spec)
 	spec.loader.exec_module(module)
 
 	############## FOR STANDALONE FUNCTIONS ONLY ############################
-	checkStandAloneFuncs(inputPath)
+	checkStandAloneFuncs(originalInput)
 	checkForSAFuncsDependency(module)
 
-	############## FOR CLASSES FUNCTIONS ONLY ############################
-	checkForClasses(inputPath)
+	############## FOR CLASSES FUNCTIONS ONLY ###############################
+	checkForClasses(originalInput)
 	checkMethodsInsideClass(module)
 	checkForDependencyinMethodsClass(module)
 
 	print("---------------------------------------------")
 	print("Here are the methods that need to be tested: ")
-	print(testDependencySets)
+	print(testDependencySets,"\n\n")
 
-	############ Insert Regression Testing Below with testDependencySets #########################
+	############ REGRESSION STARTS BASED ON DEPENDENCY #########################
+	fileName = os.path.basename(originalInput)  				#eds_report.csv
+	locationOriginal = os.path.dirname(originalInput) + "/"   		#/srv/volume1/data/eds
+	locationModified = os.path.dirname(modifiedInput)  + "/"
+
+	regression.regTest(locationOriginal, locationModified, fileName , list(testDependencySets))
 				    		
 if __name__ == "__main__":
     main()
