@@ -1,4 +1,4 @@
-class MathTest(object):
+class MathTest:
     def __init__(self):
         self.owner = "Kelvin"
 
@@ -18,4 +18,5 @@ class MathTest(object):
         return f
 
     def square(self, n: int = 10):
-        return n**2
+        temp = self.plus(5)
+        return n**temp
