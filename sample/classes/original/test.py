@@ -17,6 +17,9 @@ class MathTest:
     def minusf(self, f: float = 0.5):
         return f
 
-    def square(self, n: int = 2):
-        temp = self.plus(5)
-        return n**temp
+    def power(self, n: int = 2):
+        power = self.plus(5)
+        return n**power
+    
+    def giveOne(self):
+        return 1

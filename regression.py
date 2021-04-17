@@ -149,7 +149,7 @@ def regTest(dir_a, dir_b, code, identifiers):
 
 
 def main():
-    regTest("./sample/a/", "./sample/b/", "test.py", ["MathTest.check_owner", "MathTest.plus", "MathTest.plusf", "MathTest.minus", "MathTest.minusf", "MathTest.square"])
+    regTest("./sample/classes/original/", "./sample/classes/modified/", "test.py", ["MathTest.check_owner", "MathTest.plus", "MathTest.plusf", "MathTest.minus", "MathTest.minusf", "MathTest.power", "MathTest.giveOne"])
 
 
 if __name__ == "__main__":
