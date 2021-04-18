@@ -5,6 +5,7 @@ import importlib.util
 import inspect
 import random
 import string
+import trace
 
 
 class HiddenPrints:
@@ -51,7 +52,7 @@ def flushPrintToString(func, para):
     return sio.read()
 
 
-def compilingReport(paras_a, results_a, paras_b, results_b, identifiers, current_time, runtime):
+def compilingReport(paras_a, results_a, coverages_a, paras_b, results_b, coverages_b, identifiers, current_time, runtime):
     filename = "test_report_" + current_time + ".txt"
     report = open(filename, "w")
     report.write("======================================================================\n")
@@ -63,7 +64,6 @@ def compilingReport(paras_a, results_a, paras_b, results_b, identifiers, current
     for idx in range(len(identifiers)):
         if results_a[idx] == results_b[idx]:
             message = identifiers[idx] + "() PASSED\n"
-            message += "----------------------------------------------------------------------\n"
             report.write(message)
         else:
             message = identifiers[idx] + "() FAILED\n"
@@ -71,8 +71,15 @@ def compilingReport(paras_a, results_a, paras_b, results_b, identifiers, current
             message += "Test result in version A: \n" + str(results_a[idx]) + "\n"
             message += "Test parameters used in version B: " + str(paras_b[idx]) + "\n"
             message += "Test result in version B: \n" + str(results_b[idx]) + "\n"
-            message += "----------------------------------------------------------------------\n"
             report.write(message)
+    
+        coverage_a_score = coverages_a[idx][1] / coverages_a[idx][0]
+        message = "\nStatement coverage in version A: " + str(coverage_a_score) + "\n"
+        coverage_b_score = coverages_b[idx][1] / coverages_b[idx][0]
+        message += "Statement coverage in version B: " + str(coverage_b_score) + "\n"
+        message += "----------------------------------------------------------------------\n"
+        report.write(message)
+
     report.write("======================================================================\n")
 
 
@@ -81,10 +88,14 @@ def regTest(dir_a, dir_b, code, identifiers):
     start_time = datetime.now()
     current_time = start_time.strftime("%d-%m-%Y_%H:%M:%S")
     print("Timestamp: " + current_time)
+
     paras_a = []
     results_a = []
+    coverages_a = []
     paras_b = []
     results_b = []
+    coverages_b = []
+
     for identifier in identifiers:
         if "." in identifier:   # check whether the identifier passed is a function in the code or a function under a class in the code
             has_class = True
@@ -113,8 +124,18 @@ def regTest(dir_a, dir_b, code, identifiers):
         if return_values_a is None:
             return_values_a = flushPrintToString(method_to_call_a, para)
 
+        with HiddenPrints():
+            tracer_a = trace.Trace()
+            tracer_a.runfunc(method_to_call_a, *para)
+            lines, linen = inspect.getsourcelines(method_to_call_a)
+
+        coverage_a = 0
+        for key in tracer_a.results().counts:
+            coverage_a += tracer_a.results().counts[key]
+
         paras_a.append(para)
         results_a.append(return_values_a)
+        coverages_a.append((len(lines) - 1, coverage_a))
 
         spec_b = importlib.util.spec_from_file_location(identifier, dir_b + code)
         module_b = importlib.util.module_from_spec(spec_b)
@@ -135,21 +156,31 @@ def regTest(dir_a, dir_b, code, identifiers):
         if return_values_b is None:
             return_values_b = flushPrintToString(method_to_call_b, para)
 
+        with HiddenPrints():
+            tracer_b = trace.Trace()
+            tracer_b.runfunc(method_to_call_b, *para)
+            lines, linen = inspect.getsourcelines(method_to_call_b)
+        
+        coverage_b = 0
+        for key in tracer_b.results().counts:
+            coverage_b += tracer_b.results().counts[key]
+
         paras_b.append(para)
         results_b.append(return_values_b)
+        coverages_b.append((len(lines) - 1, coverage_b))
 
         # DEBUG:
         # assert(return_values_a == return_values_b), identifier
 
     runtime = datetime.now() - start_time
-    compilingReport(paras_a, results_a, paras_b, results_b, identifiers, current_time, runtime)
+    compilingReport(paras_a, results_a, coverages_a, paras_b, results_b, coverages_b, identifiers, current_time, runtime)
     elapsed_time = float(runtime.seconds) + float(runtime.microseconds) / 1e6
     print("Ran " + str(len(identifiers)) + " tests in " + str(elapsed_time) + "s")
     print("RegTest completes.")
 
 
 def main():
-    regTest("./sample/classes/original/", "./sample/classes/modified/", "test.py", ["MathTest.check_owner", "MathTest.plus", "MathTest.plusf", "MathTest.minus", "MathTest.minusf", "MathTest.power", "MathTest.giveOne"])
+    regTest("./sample/classes/original/", "./sample/classes/modified/", "test.py", ["MathTest.check_owner", "MathTest.plus", "MathTest.plusf", "MathTest.minus", "MathTest.minusf", "MathTest.power", "MathTest.giveOne", "MathTest.giveOddOrEven"])
 
 
 if __name__ == "__main__":

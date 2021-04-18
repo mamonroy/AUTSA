@@ -23,3 +23,9 @@ class MathTest:
     
     def giveOne(self):
         return 1
+
+    def giveOddOrEven(self, b: bool):
+        if b:
+            return 1
+        else:
+            return 2
