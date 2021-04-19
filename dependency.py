@@ -3,11 +3,14 @@ import importlib
 import regression
 import os
 from os import path
+import graphs
 
 listOfStandAloneFunctions = []
 listOfClasses = []
 listOfMethodsInAClass = {}
 temp = []
+directedGraph = graphs.Graphs()
+
 
 # Lists of Functions that need to be tested because of dependency
 testDependencySets = set()
@@ -55,7 +58,8 @@ def checkForSAFuncsDependency(module):
 			if(instruction in listOfStandAloneFunctions):
 				testDependencySets.add(function)
 				testDependencySets.add(instruction)
-				print(function, "is dependent on", instruction)						# For Debugging purposes
+				directedGraph.addEdges((instruction, function))
+				#print(function, "is dependent on", instruction)						# For Debugging purposes
 
 def checkMethodsInsideClass(module):
 	for class_ in listOfClasses:
@@ -83,13 +87,17 @@ def checkForDependencyinMethodsClass(module):
 				if(instruction in methods):
 					testDependencySets.add(className + "." + nameMethod)
 					testDependencySets.add(className + "." + instruction)
-					print(nameMethod, "is dependent on", instruction)					# For Debugging purposes
+					directedGraph.addEdges((instruction, nameMethod))
+					#print(nameMethod, "is dependent on", instruction)					# For Debugging purposes
 
 def main():
 
 	############## INPUT ############################
-	originalInput = input('Please enter the path of the original file: ')
-	modifiedInput = input('Please enter tha path of the modified file: ')
+	# originalInput = input('Please enter the path of the original file: ')
+	# modifiedInput = input('Please enter tha path of the modified file: ')
+
+	originalInput = "./sample/standaloneFunctions/original/test.py"
+	modifiedInput = "./sample/standaloneFunctions/original/test.py"
 
 	if(not path.exists(originalInput) or not path.exists(modifiedInput)):
 		print("Files do not exists")
@@ -110,7 +118,7 @@ def main():
 	checkMethodsInsideClass(module)
 	checkForDependencyinMethodsClass(module)
 
-	print("---------------------------------------------")
+	# print("---------------------------------------------")
 	print("Here are the methods that need to be tested: ")
 	print(testDependencySets,"\n\n")
 
@@ -120,6 +128,9 @@ def main():
 	locationModified = os.path.dirname(modifiedInput)  + "/"
 
 	regression.regTest(locationOriginal, locationModified, fileName , list(testDependencySets))
+
+	# Draw the directed Graph Diagram 
+	directedGraph.draw()
 				    		
 if __name__ == "__main__":
     main()
