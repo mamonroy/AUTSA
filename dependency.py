@@ -93,8 +93,8 @@ def checkForDependencyinMethodsClass(module):
 def main():
 
 	############## INPUT ############################
-	# originalInput = input('Please enter the path of the original file: ')
-	# modifiedInput = input('Please enter tha path of the modified file: ')
+	originalInput = input('Please enter the path of the original file: ')
+	modifiedInput = input('Please enter tha path of the modified file: ')
 
 	originalInput = "./sample/standaloneFunctions/original/test.py"
 	modifiedInput = "./sample/standaloneFunctions/original/test.py"
@@ -129,7 +129,7 @@ def main():
 
 	regression.regTest(locationOriginal, locationModified, fileName , list(testDependencySets))
 
-	# Draw the directed Graph Diagram 
+	# Draw the directed Graph Diagramg
 	directedGraph.draw()
 				    		
 if __name__ == "__main__":
